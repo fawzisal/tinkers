@@ -1,0 +1,14 @@
+#!/bin/bash
+# 
+# implode:   Convert a spreadsheet file (xls, xlsx, ods, etc.)
+#				into csv files (one file per sheet)
+# 
+# REQUIREMENTS: ssconvert (from LibreOffice)
+# 				rename (from util-linux)
+# 
+# todo: use sheet names to rename csv files
+# 
+
+q="$1";
+ssconvert -S "$q" "$q.csv";
+rename -e "s/\.\w+\.csv\.(\d+)$/_\$1.csv/" *.csv*;

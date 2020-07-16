@@ -17,7 +17,9 @@ str=$(cat |
 	xsv frequency -nl0 |
 	xsv select 2,3);
 
-mcf="$(pwd)/data/common_words.txt"
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+mcf="$datadir/common_words.txt"
 most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
 
 echo "$str" |

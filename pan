@@ -3,8 +3,7 @@
 # pan:   convert all files in the current folder
 # 
 # 
-# REQUIREMENTS: pandoc
-#				mupdf-tools
+# REQUIREMENTS: pandoc, mupdf-tools
 #
 
 q="$BASH_ARGV";

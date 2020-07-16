@@ -1,0 +1,19 @@
+#!/bin/bash
+# 
+# sqlite2csv:   Splits an sqlite database into csv files of its
+#								tables (files are saved in the current directory).
+# 
+# REQUIREMENTS: sqlite3
+# 
+
+q=$1
+alias sqlite3=/usr/bin/sqlite3
+
+basename=$(echo $q | sed 's/\.sqlite//');
+echo "$basename"
+tables=$(sqlite3 -csv -header -batch $q '.tables');
+
+for t in ${tables[@]}; do {
+	echo $t;
+	sqlite3 -csv -header -batch $q "select * from $t;" > $basename-$t.csv;
+}; done

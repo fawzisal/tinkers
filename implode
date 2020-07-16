@@ -3,11 +3,30 @@
 # implode:   Convert a spreadsheet file (xls, xlsx, ods, etc.)
 #				into csv files (one file per sheet)
 # 
-# REQUIREMENTS: ssconvert (from LibreOffice)
-# 				rename (from util-linux)
+# REQUIREMENTS:	ssconvert (from LibreOffice)
+# 		rename (from util-linux)
 # 
-# todo: use sheet names to rename csv files
+# TODO: use sheet names to rename csv files
 # 
+
+help_string="
+$bold implode$blank: clean up names of files/folders in current folder
+
+$yellow USAGE: $blank
+    $bold implode $blank [flags/options] [filename]
+
+$yellow FLAGS: $blank
+    $green -c   $blank .
+    $green -h   $blank show list of command-line options.
+"
+
+while getopts 'h-:' opt; do
+    case "${opt}" in
+    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+    *) echo "Unknown flag $OPTARG."; exit 1;;
+  esac
+done
 
 q="$1";
 ssconvert -S "$q" "$q.csv";

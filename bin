@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# bin:   Create a histogram of non-common words in a string input.
+#				!important: Data is pasted from the clipboard.
+# 
+# REQUIREMENTS: xsv, gsed, perl
+# 
+
+n0=0
+n=1
+i=0
+
+str=$(cat |
+	tr -sc '[A-z0-9\n]' '\n' |
+	sed 's/$/,/' |
+	sort |
+	xsv frequency -nl0 |
+	xsv select 2,3);
+
+mcf="$(pwd)/data/common_words.txt"
+most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
+
+echo "$str" |
+	gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i" |
+	perl -0777 -pe 's/^\n//gm';
+

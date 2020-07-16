@@ -8,7 +8,9 @@
 
 q="$BASH_ARGV";
 
-. "$(pwd)/data/colors.sh";
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+. "$(datadir)/colors.sh";
 debug=0;
 
 b_conv_from=""

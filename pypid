@@ -1,0 +1,7 @@
+#!/bin/bash
+# 
+# pypid:   Search for pypi packages and display their download statistics.
+# 
+
+list=$(pip search "$1" | gsed 's/\n */ /' | gsed 's/ .*//' | tr '\n' ' ')
+pypi $list

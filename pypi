@@ -1,0 +1,14 @@
+#!/bin/bash
+# 
+# pypi:   Get download statistics for pypi package.
+# 
+
+for i in "$@"; do {
+	res=$(pandoc -i "https://pypistats.org/packages/$i" -f html -t plain);
+	res1=$(echo $res | gsed "s/^.*Summary: /$i;/"| gsed 's/ API About FAQs//'| gsed 's/Latest version: \(\S*\)/;v\1;/g'| gsed 's/Downloads last \(\w\)\w*: /;\1/g'| gsed 's/;/ | /g');
+	# summ=$(echo $res1 | gsed 's/^.*|//' | gsed 's/<.*$//' );
+	# ver=$(echo $res1 | gsed 's/^.*<//' | gsed 's/>.*$//' );
+	# dl=$(echo $res1 | gsed 's/^.*> //');
+	# printf "$i... $ver [$dl]: $summ\n";
+	echo $res1;
+}; done

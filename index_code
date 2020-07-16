@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# index_code:   Prepends ASCII data about the first 3 letters of every line.
+# 							Helps checking if a list is in order.
+#							!important: Data is pasted from the clipboard.
+# 
+# returned (tab-separated): $ld	$ln	$l
+#						where $ld is the difference in first 3 letters' ascii codes
+#											between current and previous line
+#									$ln is the ascii codes of the first 3 letters'
+#									$l 	is the original line
+# 
+
+function index_precode(){
+	qi="$1";
+	q1=$(echo "$qi" | tr -dc '[A-Z][a-z][0-9]\n');
+	n1=$((36#${q1::3}));
+	echo "$n1";
+}
+
+q="$(pbpaste)";
+res=""; IFS=$'\n';read -rd '' -a y <<< "$q";
+for l in ${y[@]}; do {
+	ln="$(index_precode "$l")";
+	ld=$[ ln - l0 ]
+	echo "$ld	$ln	$l";
+	l0=$ln;
+}; done
+

@@ -1,0 +1,15 @@
+#!/bin/bash
+# 
+# lookup_range:   Analogue to the lookup function in Excel.
+# 
+
+val="$1"
+range=($(echo "$2"|tr -s ',' '\n'))
+i=0;
+for r in ${range[@]}; do {
+    i=$[$i+1];
+    if [[ $val -lt $r ]]; then {
+        echo $[$i - 2];
+        break;
+    }; fi
+}; done

@@ -1,0 +1,13 @@
+#!/bin/bash
+# 
+# dup:   Duplicate a file n times.
+# 
+
+fname="$1";
+n="$2";
+if [[ -z $n ]]; then n=1; fi
+basename=$(echo $fname | gsed 's/\.[a-z]\+$//' );
+ext=$(echo $fname | gsed 's/^.*\(\.[a-z]\+\)$/\1/' );
+for i in $(seq $n); do {
+  cp "$fname" "$basename-$i$ext";
+}; done

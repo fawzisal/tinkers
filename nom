@@ -1,0 +1,38 @@
+#!/bin/bash
+# 
+# nom:   File renamer for case conversions.
+# 
+# 
+# REQUIREMENTS: rename
+# 
+
+q="$BASH_ARGV";
+
+help_string="
+$bold nom$blank: clean up names of files/folders in current folder
+
+$yellow USAGE: $blank
+    $bold nom $blank [flags/options] [query (optional)]
+
+$yellow FLAGS: $blank
+    $green -c   $blank .
+    $green -h   $blank show list of command-line options.
+"
+
+CASE=0
+while getopts 'h-:' opt; do
+    case "${opt}" in
+    c) CASE=1;;
+    C) CASE=2;;
+    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+    :) echo "Option -$OPTARG requires an argument."; exit 1;;
+    *) echo "Option -$OPTARG requires an argument."; exit 1;;
+  esac
+done
+
+if [[ -z "$q" ]]; then {
+    rename --nows -z -S '_-_' - *;
+}; else {
+    rename --nows -z -S '_-_' - "$q";
+}; fi

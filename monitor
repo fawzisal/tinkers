@@ -1,0 +1,21 @@
+#!/bin/bash
+# 
+# monitor:   repeat COMMAND every DT (default 10) seconds	
+# 
+
+cmd="$1"
+dt="$2"
+
+function monitor__(){
+	if [ -z $dt ]; then {
+		dt=10;
+	}; fi;
+	while [ 1 ]; do {
+		printf "$(date)   ";
+		eval "$cmd";
+		sleep $dt;
+	};
+	done;
+};
+monitor__
+

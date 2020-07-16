@@ -1,0 +1,34 @@
+#!/bin/bash
+# 
+# name:   Rename file using metadata (title, author, etc.).
+# 
+
+fname="$1"
+e="$(exiftool -s -T -FileTypeExtension $fname)"
+function nFull(){
+	val=$(exiftool -T -s -$1 "$fname");
+	if [[ $val && $val != "null" && $val != "" && $val != "\"\"" ]]; then {
+		echo "$val" | tr -s ' ' '_' | sed 's/[^A-z0-9_\-\,]//g';
+	}; fi;
+};
+
+# n="";
+if [[ ! $n ]]; then { n="$(nFull Title)"; }; fi
+if [[ ! $n ]]; then { n="$(nFull BookName)"; }; fi
+if [[ ! $n ]]; then { n="$(nFull FileName | sed 's/\.[A-z0-9]*$//' )"; }; fi
+
+# a="";
+if [[ ! $a ]]; then { a="$(nFull Author)"; }; fi
+if [[ ! $a ]]; then { a="$(nFull Artist)"; }; fi
+if [[ ! $a ]]; then { a="$(nFull Album)"; }; fi
+if [[ ! $a ]]; then { a="$(nFull Composer)"; }; fi
+if [[ ! $a ]]; then { a="$(nFull Copyright)"; }; fi
+if [[ ! $a ]]; then { a="$(nFull Publisher)"; }; fi
+# if [[ ! $a ]]; then { a="UNKNOWN"; }; fi
+
+newname="$n";
+if [[ $a ]]; then newname="$newname-$a"; fi;
+if [[ $e ]]; then newname="$newname.$e"; fi;
+
+echo "New Name: <$newname>";
+mv "$fname" "$newname"

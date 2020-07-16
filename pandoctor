@@ -1,0 +1,15 @@
+#!/bin/bash
+# 
+# pandoctor:   Pretty-print input and output format for pandoc.
+# 
+# 
+# REQUIREMENTS: pandoc
+# 
+
+pdin=$(pandoc --list-input-formats);
+pdout=$(pandoc --list-output-formats);
+echo "=== PANDOC INPUT FORMATS ===";
+printf "%-20s %-20s %-20s %-20s\n" ${pdin[@]};
+printf "\n";
+echo "=== PANDOC OUTPUT FORMATS ===";
+printf "%-20s %-20s %-20s %-20s\n" ${pdout[@]};

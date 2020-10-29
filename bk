@@ -1,0 +1,70 @@
+#!/bin/bash
+#
+# bk:  tag file with data from isbn
+# 
+# REQUIREMENTS: ?
+# 
+
+q="$BASH_ARGV";
+debug=0;
+help_string="
+$bold bk$blank: Tag [file] with data from Google Books using [isbn]
+
+$yellow USAGE: $blank
+    $bold bk $blank -f [file] -i [isbn]
+
+$yellow FLAGS: $blank
+	$green
+    $green -h   $blank show list of bk-line options.
+$yellow
+OPTIONS: $blank
+    $green -f [fileName]  $blank filename to write tags to.
+    $green -i [isbn]      $blank isbn to use.
+
+"
+
+while getopts 'h-:f:i:' opt; do
+    case "${opt}" in
+		d) debug=1;;
+		f) filename="$OPTARG";;
+		i) isbn="$OPTARG";;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+if [[ "$debug" == 1 ]]; then {
+	echo "debugging";
+}; fi
+
+# filename="$q"
+# isbn="${q[2]}"
+echo "filename: $filename"
+echo "isbn: $isbn"
+ext=$(echo $filename | grep -o '\.\w\+$' | tr -d '.')
+res="$(curl https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn)"
+
+dt=$(echo $res | jq '.items[0].volumeInfo.publishedDate')
+dt="${dt:1:4}"
+author=$(echo $res | jq '.items[0].volumeInfo.authors[0]' | tr -d '"')
+author_lname=$(echo $author | gsed -E 's/^([A-Z])[A-Za-z0-9 \-\.]+ ([A-z]+)$/\2_\1/g' |
+		gsed -E 's/^([A-Z])[A-Za-z0-9 \-\.]+,[A-Za-z0-9 \-\.]* ([A-z])[A-z]+$/\1_\2/g')
+title=$(echo $res | jq '.items[0].volumeInfo.title' | tr -d '"')
+title_clean=$(echo $title | tr -s ' ' '_')
+publisher=$(echo $res | jq '.items[0].volumeInfo.publisher')
+
+exiftool -ISBN="$isbn" -Author="$author" \
+			-Title="$title" -Date="$dt" -Publisher="$publisher" \
+			"$filename";
+
+echo "new filename: $isbn--$author_lname-$dt-$title_clean.$ext"
+
+read -p "Are you sure? " -n 1 -r
+# echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    # do dangerous stuff
+	mv "$filename" "$isbn--$author_lname-$dt-$title_clean.$ext"
+fi
+

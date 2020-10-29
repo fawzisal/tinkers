@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# command:  Lorem ipsum dolor sit amet consectetur adipiscing,
+# 		elit dapibus accumsan suscipit euismod tincidunt.
+# 
+# REQUIREMENTS: req1, re2, req3
+# 
+
+q="$BASH_ARGV";
+v_start="^"
+sep=""
+v_one='-m1'
+sep_full="\n\n------------------------------------------------------------------------------------------------\n"
+help_string="
+$bold command$blank: Lorem ipsum dolor sit amet consectetur adipiscing.
+
+$yellow USAGE: $blank
+    $bold command $blank [flags/options] [query]
+
+$yellow FLAGS: $blank
+    $green -n   $blank use native (OS-X) dictionary.
+    $green -a   $blank display all results [first result is displayed by default].
+    $green -A   $blank show all matches (not just word entries).
+    $green -e   $blank require exact match at word boundaries.
+    $green -h   $blank show list of command-line options.
+
+"
+
+while getopts 'enaA1dh-:' opt; do
+    case "${opt}" in
+		n) b_osx=1;;
+		A) v_start="";;
+		a) v_one=''; sep="$sep_full";;
+		e) v_exact='-w';;
+		d) b_debug=1;;
+		h|\?) printf "$help_string"; b_help="help"; exit 1;;
+		-) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+		*) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+if [[ $b_debug ]]; then {
+	echo "debugging";
+}; fi
+
+if [[ -z "$q" ]]; then {
+	printf "$help_string";
+}; elif [[ $b_osx ]]; then {
+	osx-dictionary -d 'British English' $q  2> /dev/null |
+		gsed 's/\(\.\|\]\) \([0-9]\) /\1\n\n\2 /g' |
+		gsed 's/ • /\n  • /g';
+}; else {
+	# echo "q: <$q,$v_one,$v_start>";
+	rg -i $v_one $v_exact "$v_start$q" /Users/admin/w/refs/words/oed.txt |
+		gsed "s/$/$sep/g" |
+		gsed 's/|/\n/g' |
+		gsed "s/\(\.\|\]\)\([0-9]\)\./\1\n\n\2./g" |
+		rg --no-column -Ni -C10 $v_exact "$q";
+}; fi

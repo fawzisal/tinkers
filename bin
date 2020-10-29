@@ -6,6 +6,30 @@
 # REQUIREMENTS: xsv, gsed, perl
 # 
 
+b_common=""
+b_num=""
+help_string="
+$bold bin_old$blank: Create a histogram of non-common words in a string input.
+
+$yellow USAGE: $blank
+    $bold bin_visual $blank [flags/options] [filename]
+
+$yellow FLAGS: $blank
+    $green -n   $blank remove number-containing words.
+    $green -c   $blank remove common words.
+    $green -h   $blank show list of command-line options.
+"
+
+while getopts 'hnc-:' opt; do
+    case "${opt}" in
+    c) b_common="1";;
+    n) b_num="1";;
+    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+    *) echo "Unknown flag $OPTARG."; exit 1;;
+  esac
+done
+
 n0=0
 n=1
 i=0
@@ -17,12 +41,23 @@ str=$(cat |
 	xsv frequency -nl0 |
 	xsv select 2,3);
 
-datadir="$DATAPATH"
-if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
-mcf="$datadir/common_words.txt"
-most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
 
-echo "$str" |
-	gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i" |
-	perl -0777 -pe 's/^\n//gm';
+str_clean="$(printf "$str")"
 
+if [[ ! -z "$b_common" ]]; then {
+    datadir="$DATAPATH"
+    if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+    mcf="$datadir/common_words.txt"
+    most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
+    str_clean=$(printf "$str_clean" |
+                gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i");
+}; fi
+
+if [[ ! -z "$b_num" ]]; then {
+    str_clean=$(printf "$str_clean" |
+                perl -pe "s/^\d*,\d*$//gi" |
+                perl -pe "s/^\w*\d\w*,\d*$//i");
+}; fi
+
+str_clean=$(echo -e "$str_clean" | perl -0777 -pe 's/^\n//gm')
+echo -e "$str_clean"

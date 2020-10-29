@@ -1,0 +1,61 @@
+#!/bin/bash
+#
+# stamp:  Lorem ipsum dolor sit amet consectetur adipiscing,
+# 		elit dapibus accumsan suscipit euismod tincidunt.
+# 
+# REQUIREMENTS: req1, re2, req3
+# 
+
+q="$BASH_ARGV";
+b_prepend=0;
+b_separator=0;
+v_delim="";
+debug=0;
+help_string="
+$bold stamp$blank: Stamp file with the current date
+
+$yellow USAGE: $blank
+    $bold stamp $blank [flags/options] [file]
+
+    e.g.    file.txt > file-20_09_03.txt
+
+$yellow FLAGS: $blank
+    $green -p                $blank prepend stamp (default is append).
+    $green -h                $blank show list of stamp-line options.
+
+$yellow
+OPTIONS: $blank
+    $green -s  [separator]   $blank separator between filename and stamp (default: _).
+    $green -d  [delimiter]   $blank delimiter of date components (default: None).
+
+"
+
+while getopts 'psh-:d:D' opt; do
+    case "${opt}" in
+		p) b_prepend=1;;
+		s) b_separator=1; v_separator="$OPTARG";;
+		d) v_delim="$OPTARG";;
+		D) debug=1;;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+if [[ "$debug" == 1 ]]; then {
+	echo "debugging";
+}; fi
+
+if [[ "$b_separator" == 0 ]]; then { v_separator="_"; }; fi
+if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
+
+date_modified=$(stat -f %m "$q");
+date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d");
+
+if [[ "$b_prepend" == 1 ]]; then {
+	rename -A "$date_modified_formatted$v_separator" "$q";
+}; else {
+	rename -Xa "$v_separator$date_modified_formatted" "$q";
+}; fi
+
+

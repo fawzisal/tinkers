@@ -1,0 +1,47 @@
+#!/bin/bash
+#
+# bin:   Create a histogram of non-common words in a string input.
+#				!important: Data is pasted from the clipboard.
+# 
+# REQUIREMENTS: xsv, gsed, perl
+# 
+
+help_string="
+$bold bin_old$blank: Create a histogram of non-common words in a string input.
+
+$yellow USAGE: $blank
+    $bold bin_visual $blank [flags/options] [filename]
+
+$yellow FLAGS: $blank
+    $green -c   $blank .
+    $green -h   $blank show list of command-line options.
+"
+
+while getopts 'h-:' opt; do
+    case "${opt}" in
+    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+    *) echo "Unknown flag $OPTARG."; exit 1;;
+  esac
+done
+
+n0=0
+n=1
+i=0
+
+str=$(cat |
+	tr -d '|' |
+	sed 's/$/|/' |
+	sort |
+	xsv frequency -nl0 --delimiter='|' |
+	xsv select 2,3);
+
+# datadir="$DATAPATH"
+# if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+# mcf="$datadir/common_words.txt"
+# most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
+
+echo "$str" |
+	# gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i" |
+	perl -0777 -pe 's/^\n//gm';
+

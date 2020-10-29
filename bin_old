@@ -6,6 +6,25 @@
 # REQUIREMENTS: gsed
 # 
 
+help_string="
+$bold bin_old$blank: Create a histogram of non-common words in a string input.
+
+$yellow USAGE: $blank
+    $bold bin_old $blank [flags/options] [filename]
+
+$yellow FLAGS: $blank
+    $green -c   $blank .
+    $green -h   $blank show list of command-line options.
+"
+
+while getopts 'h-:' opt; do
+    case "${opt}" in
+    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+    *) echo "Unknown flag $OPTARG."; exit 1;;
+  esac
+done
+
 related="$(< /dev/stdin)";
 
 n0=0

@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# timer:  sleep after x time
+# 
+# REQUIREMENTS: ?
+# 
+
+q="$BASH_ARGV";
+debug=0;
+help_string="
+$bold timer$blank: Tag [file] with data from Google Books using [isbn]
+
+$yellow USAGE: $blank
+    $bold timer $blank [minutes]
+
+$yellow FLAGS: $blank
+	$green
+    $green -h   $blank show list of timer-line options.
+$yellow
+
+"
+
+while getopts 'h-:' opt; do
+    case "${opt}" in
+		d) debug=1;;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+if [[ "$debug" == 1 ]]; then {
+	echo "debugging";
+}; fi
+
+sec=$(printf "%.f" $(echo "$q*60" | bc))
+if [[ $q > 0 ]]; then {
+	sec_rem="$sec"
+	while [[ $sec_rem > 0 ]]; do {
+		printf "  remaining:  %3.f/$sec seconds\r" "$sec_rem";
+		sleep 1;
+		sec_rem=$[ $sec_rem - 1 ];
+	}; done
+	printf "\n";
+	vol=$(m volume | grep -o '\d\+')
+	for i in $(seq $vol); do {
+		m volume "$[ $vol - $i ]";
+		sleep 1;
+	}; done
+	m sleep;
+}; else {
+	printf "$help_string"; b_help="help";
+}; fi
+
+

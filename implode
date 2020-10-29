@@ -1,16 +1,13 @@
 #!/bin/bash
 # 
-# implode:   Convert a spreadsheet file (xls, xlsx, ods, etc.)
-#				into csv files (one file per sheet)
+# implode:   Combine all csv files in the current directory
+#				into a spreadsheet (xls, xlsx, ods, etc.)
 # 
 # REQUIREMENTS:	ssconvert (from LibreOffice)
-# 		rename (from util-linux)
-# 
-# TODO: use sheet names to rename csv files
 # 
 
 help_string="
-$bold implode$blank: clean up names of files/folders in current folder
+$bold implode$blank: Combine all csv files in the current directory into a spreadsheet (xls, xlsx, ods, etc.)
 
 $yellow USAGE: $blank
     $bold implode $blank [flags/options] [filename]
@@ -29,5 +26,4 @@ while getopts 'h-:' opt; do
 done
 
 q="$1";
-ssconvert -S "$q" "$q.csv";
-rename -e "s/\.\w+\.csv\.(\d+)$/_\$1.csv/" *.csv*;
+ssconvert $(ls *csv) -M "$q";

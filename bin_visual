@@ -4,6 +4,26 @@
 # 	print the output.
 # 
 
+help_string="
+$bold bin_visual$blank: Classify a list of lines of string in the clipboard & print the output.
+		(Data is pasted from the clipboard.)
+
+$yellow USAGE: $blank
+    $bold bin_visual $blank [flags/options] [filename]
+
+$yellow FLAGS: $blank
+    $green -c   $blank .
+    $green -h   $blank show list of command-line options.
+"
+
+while getopts 'h-:' opt; do
+    case "${opt}" in
+    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+    *) echo "Unknown flag $OPTARG."; exit 1;;
+  esac
+done
+
 n0=0
 n=1
 i=0

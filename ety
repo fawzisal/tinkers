@@ -1,0 +1,101 @@
+#!/bin/bash
+#
+# ety:  Find synonyms using Roget's thesaurus.
+# 
+# REQUIREMENTS: TBD
+# 
+
+
+q="$BASH_ARGV";
+m=1
+a=0
+e=0
+i=1
+debug=0
+
+help_string="
+$bold ety$blank: Search etymology.
+
+$yellow USAGE: $blank
+    $bold ety $blank [flags/options] [query]
+
+$yellow FLAGS: $blank
+    $green -a   $blank full-text search.
+    $green -e   $blank exact-term search.
+    $green -i   $blank case sensitive search.
+    $green -h   $blank show list of command-line options.
+
+"
+
+while getopts 'h-:aied' opt; do
+    case "${opt}" in
+		a) a=1;;
+		e) e=1;;
+		i) i=0;;
+		d) debug=1;;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+  	esac
+done
+
+# . "/Users/admin/pros/sys/helpers/data/colors.sh";
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+
+m0=$[ m - 1 ];
+if [[ "$a" == 1 ]]; then { prebase="$q"; }; else { prebase="^$q"; }; fi
+# base=("ø[^øØ\n]*$prebase[^øØ\n]*Ø" "π[^π∏\n]*$prebase[^π∏\n]*∏"
+# 	  "†[^†‡\n]*$prebase[^†‡\n]*‡" "^[^\n]*$prebase[^\n]*$");
+# postbase="${base[$m0]}";
+
+if [[ "$debug" == 1 ]]; then {
+	# echo "base: $base";
+	echo "prebase: $prebase";
+}; fi
+
+if [[ "$i" == 1 ]]; then i="-i "; else { i=""; }; fi
+if [[ "$e" == 1 ]]; then e="-w "; else { e=""; }; fi
+
+if [[ -z "$q" ]]; then {
+	printf "$help_string";
+}; else {
+	#	perl -pe 's/<p>/\n/g' |
+	#	perl -pe 's/<\/p>//g' |
+	rg -IN $e $i --pcre2 "$prebase" $datadir/ety.csv |
+		perl -pe 's/\n/\n\n/g' |
+		perl -pe 's/<br\/>/\n/g' |
+		gsed 's/|@/   /g' |
+		gsed 's/|/\n/g' | rg "$q" -C10;
+	# rg -INo $i --pcre2 "$postbase" $datadir/etyet.md |
+	# 	gsed 's/\t\(#.\+\) --/\n===== \1\t========================================/g' |
+	# 	gsed 's/>|/, /g' |
+	# 	# perl -0777 -pe 's/‡\n?†/\n ---------------------------------------- \n/g' |
+	# 	# gsed 's/\(“.*”\)/    \1\n/g' |
+	# 	gsed 's/\(“[^“”\n]*”\)/\n\n----- \1\n/g' |
+	# 	perl -0777 -pe 's/∏\n?π/\n\n/g' |
+	# 	gsed 's/;Øø/ || /g' |
+	# 	tr -d 'øπ†<>∏Ø‡≠' |
+	# 	perl -0777 -pe 's/;\n+/ || /g' |
+	# 	rg $i --passthru "$q" -;
+	echo;
+}; fi
+
+# if [[ $m == 1 ]]; then {
+# 	rg -INo --pcre2 "ø[^øØ\n]*$q[^øØ\n]*Ø" etyet.md |
+# 		gsed 's/>|/, /g' |
+# 		gsed 's/;Øø/ || /g' |
+# 		gsed 's/Ø/\n/g' |
+# 		perl -0777 -pe 's/;\n+/ || /g' |
+# 		tr -d 'ø<>Ø' |
+# 		rg --passthru "$q" -;
+# }; elif [[ $m == 2 ]]; then {
+# 	rg -INo --pcre2 "π[^π∏\n]*$q[^π∏\n]*∏" etyet.md |
+# 		gsed 's/>|/, /g' |
+# 		gsed 's/;Øø/ || /g' |
+# 		perl -0777 -pe 's/∏\n?π/\n\n/g' |
+# 		tr -d 'øπ<>∏Ø' |
+# 		rg --passthru "$q" -;
+# }; elif [[ $m == 3 ]]; then {
+# }; fi
+

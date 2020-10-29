@@ -1,0 +1,101 @@
+#!/bin/bash
+# 
+# cali:  Search my book collection (fulltext).
+# 
+# REQUIREMENTS: fd, mutool
+# 
+
+q="$BASH_ARGV";
+
+b_convert=""; b_icase=""; b_word=""; b_count=""; b_Folder=""; version="1.0"; b_find="";
+b_file=""; v_file="."; b_klean=""; b_add="";
+b_context=""; v_context="";
+. "$HOME/pros/sys/helpers/data/colors.sh";
+help_string="$yellow
+USAGE: $blank
+    $bold cali $blank [flags/options] [query]
+$yellow
+FLAGS: $blank
+    $green -w   $blank only show matches surrounded by word boundaries.
+    $green -c   $blank only show count of matches.
+    $green -k   $blank only show count & clean the output.
+    $green -h   $blank show list of command-line options.
+    $green -v   $blank show version of cali.
+$yellow
+OPTIONS: $blank
+    $green -f [fileName]  $blank searches in matching file names only.
+    $green -C [number]    $blank provide a context of [number] lines.
+
+"
+base="$HOME/books/shelf"
+
+if [[ -z $(echo "$q" | tr -d ' ') ]]; then {
+	printf "$help_string"; b_help="help"; exit 1;
+}; fi
+
+while getopts 'wcrhvikFf:C:-:a:' opt; do
+	case "${opt}" in
+		r) b_convert="convert";;
+		w) b_word="-w";;
+		c) b_count="-c";;
+		i) b_icase="-i";;
+		k) b_klean="1";;
+		f) b_file="-f"; v_file="$OPTARG";;
+		a) b_add="-f"; v_add="$OPTARG";;
+		C) b_context="-C"; v_context="$OPTARG";;
+		F) b_find="find";;
+		v) echo -e "$version";;
+		h|\?) printf "$help_string"; b_help="help"; exit 1;;
+		-) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+		# \?) echo "Invalid option: -$OPTARG" >&2; exit 1;;
+		# :) echo "Option -$OPTARG requires an argument."; exit 1;;
+		# *) echo "Option -$OPTARG requires an argument."; exit 1;;
+	esac
+done
+
+if [[ ! -z $b_add ]]; then {
+	cp "$q" "$HOME/books/shelf/cali/";
+	bk -i "$v_add" -f "$HOME/books/shelf/cali/$q";
+}; elif [[ ! -z $b_convert ]]; then {
+	for i in $(fd . -d1 -e pdf "$base/cali" -x echo {/}); do {
+		# i_clean=$(echo $i | gsed "s/$HOME\/lmse\/espage\/zotero\/storage\///" | gsed "s/\.pdf$//");
+		# dir=$(echo $i_clean | gsed "s/\/.*$//");
+		if [[ ! -e "$base/.cali/$i.txt" ]]; then {
+			echo "converting:	$i ...";
+			mutool convert -o "$base/.cali/$i.txt" "$base/cali/$i" 2>/dev/null;
+		}; fi
+	}; done
+	for i in $(fd . -d1 -e epub -e mobi -e djvu "$base/cali" -x echo {/}); do {
+		# i_name=$(echo $j | gsed 's/\.\w\+$//g' )
+		# i_ext=$(echo $j | grep -o '\.\w\+$' | tr -d '\.' )
+		if [[ ! -e "$base/.cali/$i.txt" ]]; then {
+			echo "converting:	$i ...";
+			ebook-convert "$base/cali/$i" "$base/.cali/$i.txt" 2>/dev/null;
+		} fi
+	}; done
+}; elif [[ ! -z $b_find ]]; then {
+	fd $b_icase "$q" "$base/.cali";
+}; elif [[ ! -z $b_klean ]]; then {
+	res=$(rg --type-add "foo:*$v_file*" -tfoo $b_context $v_context $b_icase $b_word -c "$q" "$HOME/books/shelf/.cali/" |
+		gsed 's/^.*\///g' |
+		gsed 's/:\([0-9]\+\)$/|\1/g' |
+		gsed 's/\-\([0-9]\+\)\-/|\1|/g' |
+		gsed 's/\-\-/|/' |
+		gsed 's/\-\-/||/' |
+		gsed 's/^\(.\{1,80\}\).*,/\1,/g' |
+		# gsed "s/^\(.*\)|\(.*\)|\(.*\)|\(.*\)|\(.*\)$/$red \1|$\2|$\3|$\4|$\5/g" |
+		gsed "s/^\(.*\)|\(.*\)|\(.*\)|\(.*\)|\(.*\)$/\5|\\$grey_light\1\\$purple|\2\\$blue|\3\\$yellow_light|\4\\$green/g");
+	if [[ ! -z "$res" ]]; then {
+		res=$(printf "$res"|
+			xsv sort -nN -s1 -d '|' |
+			# xsv select '5,1,2,3,4' |
+			gsed 's/\.txt *//g' |
+			xsv table);
+		printf "$green$res$blank";
+	}; else {
+		echo "0 results found.";
+	}; fi
+}; else {
+	rg --type-add "foo:*$v_file*" -tfoo $b_context $v_context $b_icase $b_word $b_count "$q" "$HOME/books/shelf/.cali/";
+}; fi
+

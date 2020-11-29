@@ -11,15 +11,16 @@ b_separator=0;
 v_delim="";
 debug=0;
 help_string="
- $bold stamp$blank: Rename a file, adding date of modification.
+$bold stamp$blank: Rename a file, adding date of modification.
 
 $yellow USAGE: $blank
     $bold stamp $blank [flags/options] [file]
 
-     e.g.    file.txt   >   200903_file.txt
+    e.g.    file.txt   >   200903_file.txt
 
 $yellow FLAGS: $blank
     $green -a                $blank append stamp (default is prepend).
+    $green -h                $blank show list of command-line options.
 
 $yellow
 OPTIONS: $blank
@@ -28,7 +29,7 @@ OPTIONS: $blank
 
 "
 
- while getopts 'ash-:d:D' opt; do
+while getopts 'ash-:d:D' opt; do
     case "${opt}" in
 		a) b_append=1;;
 		s) b_separator=1; v_separator="$OPTARG";;
@@ -50,7 +51,8 @@ if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
 date_modified=$(stat -f %m "$q");
 date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d");
 
- if [[ "$b_append" == 1 ]]; then {
+if [[ "$b_append" == 1 ]]; then {
+if [[ "$b_append" == 1 ]]; then {
 	rename -Xa "$v_separator$date_modified_formatted" "$q";
 }; else {
 	rename -A "$date_modified_formatted$v_separator" "$q";

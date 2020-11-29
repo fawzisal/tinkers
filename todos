@@ -28,6 +28,9 @@ while getopts 'h-:' opt; do
 	esac
 done
 
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+
 if [[ "$debug" == 1 ]]; then {
 	echo "debugging";
 }; fi
@@ -40,7 +43,7 @@ function todo_splt(){ n="$1";
 		sig=${n:0:3}; frog=$(echo ${n:4:3} | rev); time=${n:8:3}; comp=${n:12:5}; emoj=${n:18:1}; cap=${n:19:1}; acry=${n:20:1}; desc=${n:23};
 		printf "$sig $green$acry$blank $frog $comp $time $emoj\\t$cap$desc\n";
 	}; fi; }
-file="/Users/admin/documents/academic/lmse/notes/ref/focus/task_focus.md";
+file="~/.local/todos/todos.md";
 n0=$(grep -n '⿶' $file | cut -d : -f1); n0=$[ n0 + 1 ];
 n1=$(grep -n '⿵' $file | cut -d : -f1); n1=$[ n1 - 1 ];
 res=""; IFS=$'\n';read -rd '' -a y <<< "$(sed "$n0,$n1 p;d" $file)";

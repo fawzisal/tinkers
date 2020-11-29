@@ -1,9 +1,8 @@
 #!/bin/bash
 #
-# cpn:  Lorem ipsum dolor sit amet consectetur adipiscing,
-# 		elit dapibus accumsan suscipit euismod tincidunt.
+# cpn:  Copy a folder using Finder.
 # 
-# REQUIREMENTS: req1, re2, req3
+# REQUIREMENTS: OSX
 # 
 
 ffrom_="$1";
@@ -42,4 +41,3 @@ f0=$(echo $f0 | tr "/" ":" )
 f1=$(echo $f1 | tr "/" ":" )
 osascript -e "tell application \"Finder\" to duplicate folder \"$f0\" to folder \"$f1\""
 
-# osascript -e 'tell application "Finder" to duplicate folder "Macintosh HD:Users:admin:.newsboat:files:podcasts:09-19:tmp" to folder "Macintosh HD:Users:admin:.newsboat:files:podcasts:09-19:baby"'

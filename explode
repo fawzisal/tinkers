@@ -4,7 +4,7 @@
 #				into csv files (one file per sheet)
 # 
 # REQUIREMENTS:	ssconvert (from LibreOffice)
-# 		rename (from util-linux)
+# 				rename (from util-linux)
 # 
 # TODO: use sheet names to rename csv files
 # 

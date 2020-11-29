@@ -1,9 +1,8 @@
 #!/bin/bash
 #
-# command:  Lorem ipsum dolor sit amet consectetur adipiscing,
-# 		elit dapibus accumsan suscipit euismod tincidunt.
+# def:  define a term using the Oxford English Dictionary (OED).
 # 
-# REQUIREMENTS: req1, re2, req3
+# REQUIREMENTS: ripgrep
 # 
 
 q="$BASH_ARGV";
@@ -12,7 +11,7 @@ sep=""
 v_one='-m1'
 sep_full="\n\n------------------------------------------------------------------------------------------------\n"
 help_string="
-$bold command$blank: Lorem ipsum dolor sit amet consectetur adipiscing.
+$bold command$blank: define a term using the Oxford English Dictionary (OED).
 
 $yellow USAGE: $blank
     $bold command $blank [flags/options] [query]
@@ -39,6 +38,9 @@ while getopts 'enaA1dh-:' opt; do
 	esac
 done
 
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+
 if [[ $b_debug ]]; then {
 	echo "debugging";
 }; fi
@@ -51,7 +53,7 @@ if [[ -z "$q" ]]; then {
 		gsed 's/ • /\n  • /g';
 }; else {
 	# echo "q: <$q,$v_one,$v_start>";
-	rg -i $v_one $v_exact "$v_start$q" /Users/admin/w/refs/words/oed.txt |
+	rg -i $v_one $v_exact "$v_start$q" "$datadir/oed.txt" |
 		gsed "s/$/$sep/g" |
 		gsed 's/|/\n/g' |
 		gsed "s/\(\.\|\]\)\([0-9]\)\./\1\n\n\2./g" |

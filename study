@@ -1,0 +1,323 @@
+#!/usr/bin/env python
+import argparse
+import pandas as pd
+from termcolor import colored as pc
+import warnings
+from os import get_terminal_size as tsize
+from pandas.core.common import SettingWithCopyWarning
+from textwrap import wrap
+import os
+from re import compile as re_compile
+import unidecode
+
+
+compif = re_compile('[^\w \-]')
+tsize_ = tsize().columns
+
+
+def calc_info(df):
+    n_q = df.shape[0]
+    n_a = df.n_asked.sum()
+    n_c = df.n_correct.sum()
+    n_e = (df.index[df.enabled == True]).shape[0]
+    n_qa = (df.index[df.n_asked > 0]).shape[0]
+    n_qc = (df.index[df.n_correct > 0]).shape[0]
+    n_qaq = round(10 * n_a / n_q, 2) if n_q > 0 else 0
+    n_qcq = round(10 * n_c / n_q, 2) if n_q > 0 else 0
+    n_qca = round(100 * n_c / n_a, 1) if n_a > 0 else 0
+    p_a = round(100 * n_qa / n_q, 1) if n_q > 0 else 0
+    p_c = round(100 * n_qc / n_q, 1) if n_q > 0 else 0
+    return {'n_q': n_q, 'n_a': n_a, 'n_c': n_c, 'n_e': n_e,
+            'n_qa': n_qa, 'n_qc': n_qc,
+            'n_qaq': n_qaq, 'n_qcq': n_qcq, 'n_qca': n_qca,
+            'p_a': p_a, 'p_c': p_c}
+
+
+def print_info(r, compact=False):
+    if compact:
+        print(f"{dft['tags'].iloc[0][:4]},"
+              + f"{r['n_q']},{r['n_a']},{r['n_qa']},{r['n_qaq']},{r['n_c']},"
+              + f"{r['n_qc']},{r['n_qcq']},{r['p_a']},{r['p_c']},{r['n_qca']}")
+    else:
+        print(f"# terms:\t{r['n_q']}\t[{r['n_e']} enabled]")
+        print(f"# asked:\t{r['n_a']}\t[{r['n_qa']} unique]\t"
+              + "[%.2f per 10 q]" % r['n_qaq'])
+        print(f"# correct:\t{r['n_c']}\t[{r['n_qc']} unique]\t"
+              + "[%.2f per 10 q]" % r['n_qcq'])
+        print(f"% asked:\t{r['p_a']}%" + "\t%.0f c/a" % r['n_qca'])
+        print(f"% correct:\t{r['p_c']}%")
+
+
+def backup(df):
+    from distutils import file_util
+    from datetime import datetime
+    import sys
+    base = "~/.local/study"
+    tday = datetime.now().strftime('%y%m%d_%H')
+    file_util.copy_file(f"{base}/db.csv", f"{base}/bk_{tday}.csv")
+    s_columns = ["n_q", "n_e", "n_qa", "n_qc", "n_a", "n_c",
+                 "n_qaq", "n_qcq", "n_qca", "p_a", "p_c"]
+    df_stats = pd.DataFrame(columns=s_columns)
+    for i in list(range(36)):
+        ch = "ch%02i" % i
+        dft = df[df.tags.str.lower().str.contains(ch)]
+        r = pd.Series(calc_info(dft))
+        df_stats.loc[ch] = r
+    df_stats.astype(int).to_csv(f"{base}/st_{tday}.csv")
+    sys.exit()
+
+
+def printQ(val):
+    prescrs = wrap(f"{val['def']}", tsize_ - 30)
+    prescr = pc("\n".join(prescrs), "yellow")
+    indicator = "⬤"
+    postscr0 = indicator
+    postscr1 = pc(indicator, "green" if val['enabled'] else "red")
+    postscr2 = f"  [{val['tags']}]" \
+               + f"   {val['n_asked']}/{df.shape[0] - i}"
+    postscr = postscr1 + postscr2
+    postscr_plain = postscr0 + postscr2
+    eblow_len = tsize_ - (len(prescrs[-1]) % tsize_)
+
+    if args.debug:
+        print(f"{eblow_len}, {len(prescrs[-1])},"
+              + "{len(postscr_plain)}, {tsize_}")
+    sepscr = ""
+
+    if len(postscr_plain) >= eblow_len:
+        sepscr = "\n"
+        eblow_len = tsize_
+    postscr_ = postscr.rjust(eblow_len)
+    print(prescr + sepscr + postscr_)
+
+    if args.sayit:
+        os.system(f"say \"{val['def']}\"")
+
+    return prescr + sepscr + postscr_
+
+
+def compare(i, j, exact=False, exactif=False):
+    if exact:
+        return i == j
+    elif exactif and not compif.search(j):
+        return i == j
+    else:
+        return i in j
+
+
+def compareDef(defi, term, exact=False, exactif=False):
+    terms = term.split('/')
+    for t in terms:
+        t = unidecode.unidecode(t)
+        if compare(defi, t, exact, exactif):
+            return True
+    return False
+
+
+def filter(df, args):
+    if args.show_hidden:
+        df = df[~df['enabled']]
+    elif not args.show_all:
+        df = df[df['enabled']]
+
+    if args.tags:
+        df = df[df.tags.str.lower().str.contains(args.tags.lower())]
+
+    if args.old:
+        la_diff = (pd.Timestamp.now() - df.last_asked).apply(lambda x: x.days)
+        df = df[la_diff > int(args.old[0])]
+
+    if args.prev:
+        df = df[df['n_asked'] > 0]
+    elif args.newt:
+        df = df[df['n_asked'] <= 0]
+
+    if args.tags:
+        df = df[df.tags.str.lower().str.contains(args.tags.lower())]
+
+    if args.asked:
+        df = df[df['n_asked'] <= int(args.asked[0])]
+
+    if args.correct:
+        df = df[df['n_correct'] <= int(args.correct[0])]
+
+    if args.score:
+        score = 10 * df['n_correct'] / df['n_asked']
+        score = score.fillna(0)
+        df = df[score <= int(args.score[0])]
+
+    n_max = df.shape[0]
+
+    if args.n_max:
+        print(f"maximum: {args.n_max}")
+        df = df.iloc[:int(args.n_max[0])]
+
+    # ORDERING
+    if not (args.ordered or args.b_list or args.info):
+        df = df.sample(frac=1,
+                       axis=0).sort_values(by=['n_asked',
+                                               'n_correct'])
+
+    # SPECIAL CASES
+    if not (args.info or args.infotable or
+            args.b_list or args.new_terms or args.new_term):
+        print(f'# QUESTIONS: {df.shape[0]} [out of {n_max} possible]')
+
+    return df
+
+
+warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
+
+db = '~/.local/study/db.csv'
+jarg = '~/.local/study/args.csv'
+jnew = '~/.local/study/new.json'
+jtem = '~/.local/study/temp.json'
+
+argsDF = pd.read_csv(jarg, index_col=0)
+parser = argparse.ArgumentParser(description='Study some more...')
+for argI in argsDF.index:
+    arg = argsDF.loc[argI]
+    arg = arg.dropna().to_dict()
+    if arg.get('nargs') and arg.get('nargs') != '?':
+        arg['nargs'] = eval(arg['nargs'])
+    arg['default'] = eval(arg['default'])
+    parser.add_argument(argI, **arg)
+
+args = parser.parse_args()
+if args.debug:
+    print(args)
+
+df = pd.read_csv(db, index_col=0)
+df['last_asked'] = df['last_asked'].astype('datetime64')
+
+# ### ADDING NEW TERMS ### #
+# in the new.json file
+if args.new_terms:
+    df0 = pd.read_json(jnew)
+    df0 = df0[~df0['def'].isin(df['def'])]
+    df = df.append(df0, ignore_index=True, sort=False)
+
+# from the commandline
+if args.new_term:
+    new_term = {"tags": "new", "enabled": True, "n_correct": 0, "n_asked": 0,
+                "term": args.new_term[0],
+                "def": args.new_term[1]}
+    df0 = pd.DataFrame([new_term])
+    df0 = df0[~df0['def'].isin(df['def'])]
+    df = df.append(df0, ignore_index=True, sort=False)
+
+# from a specified CSV
+if args.filename:
+    dfn = pd.read_csv(args.filename)
+    dfe = pd.DataFrame(columns=df.columns)
+    dfn = pd.concat([dfe, dfn], sort=False)
+    dfn['tags'] = dfn['tags'].fillna('')
+    dfn['enabled'] = dfn['enabled'].fillna(False)
+    dfn['n_asked'] = dfn['n_asked'].fillna(0)
+    dfn['n_correct'] = dfn['n_correct'].fillna(0)
+    # df = pd.concat([df, dfn], sort=False)
+    df = df.append(dfn, ignore_index=True)
+    df = df.drop_duplicates(subset=['term', 'def', 'tags'])
+    # df.to_csv(db)
+
+# just backup the current db
+if args.b_bk:
+    backup(df)
+
+# ### FILTERING ### #
+dfo = df
+df = filter(df, args)
+
+i = 0
+while i < df.shape[0]:
+    if args.info or args.infotable:
+        dft = dfo if df.shape[0] == 0 else df
+        print_info(calc_info(dft), args.infotable)
+        break
+    elif args.b_list:
+        dft = df[['n_asked', 'n_correct', 'tags', 'term']]
+        dft['term'] = dft['term'].str.ljust(dft['term'].apply(len).max())
+        print(dft.to_string(index=False, na_rep="-"))
+        break
+    elif args.new_terms or args.new_term or args.filename:
+        break
+
+    val = df.loc[df.index[i]]
+    id = val.name
+
+    val['n_asked'] = val['n_asked'] + 1
+    val_la = val['last_asked']
+
+    ques = printQ(val)
+
+    wrong = True
+    while wrong:
+        defi = input("> ")
+        term = val['term']
+        if defi == "q":
+            val['n_asked'] = val['n_asked'] - 1
+            wrong = False
+        elif defi == "-" or defi == "0" or defi == "\\":
+            val['n_asked'] = val['n_asked'] - 1
+            val['enabled'] = False
+            wrong = False
+            print(pc('Question disabled.', 'red'))
+        elif defi == "1":
+            val['n_asked'] = val['n_asked'] - 1
+            val['enabled'] = True
+            print(pc(val['term'], 'cyan'))
+            wrong = False
+            print('This question was just a review.')
+        elif defi == "-1":
+            df.loc[df.index[i - 1], 'enabled'] = False
+            print('Last question was disabled.')
+        elif defi == "k":
+            os.system('clear')
+            print(ques)
+        elif defi == "r":
+            df.loc[df.index[i - 1],
+                   'n_asked'] = df.loc[df.index[i - 1],
+                                       'n_asked'] - 1
+            print('Last question was just a review.')
+        elif len(defi) == 0:
+            val_la = pd.Timestamp.today()
+            print(pc(val['term'], "blue"))
+            wrong = False
+        else:
+            if not args.casesens:
+                defi = defi.lower()
+                term = term.lower()
+            comp = compareDef(defi, term, args.exact, args.exactif)
+            print(f'args.exact: {args.exact}, args.exactif: {args.exactif}, comparison result: {comp}')
+            if comp:
+                val['n_correct'] = val['n_correct'] + 1
+                val_la = pd.Timestamp.today()
+                postscr = f" [{val['n_correct']}/{val['n_asked']}]" + \
+                          f" It is {val['term']}"
+                print(pc("Correct!", "green"), postscr)
+                if args.sayit:
+                    os.system(f"say correct")
+                wrong = False
+            else:
+                val_la = pd.Timestamp.today()
+                print(pc("Incorrect!", "red") +
+                      f" [{val['n_correct']}/{val['n_asked']}]")
+                if args.unforg:
+                    print("\tthat was..." +
+                          pc(val['term'], "red"))
+                    if args.sayit:
+                        os.system(f"say incorrect")
+                        os.system(f"say \"correct answer is {val['term']}\"")
+                    wrong = False
+    if args.review:
+        val['n_asked'] = val['n_asked'] - 1
+    else:
+        val['last_asked'] = val_la
+
+    df.loc[val.name] = val
+    if defi == "q":
+        break
+    i = i + 1
+
+dfo.loc[df.index] = df.loc[df.index]
+dfo.to_csv(db)

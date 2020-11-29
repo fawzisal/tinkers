@@ -1,26 +1,25 @@
 #!/bin/bash
 #
-# stamp:  Lorem ipsum dolor sit amet consectetur adipiscing,
-# 		elit dapibus accumsan suscipit euismod tincidunt.
+# stamp:  Rename a file, adding date of modification.
 # 
 # REQUIREMENTS: req1, re2, req3
 # 
 
 q="$BASH_ARGV";
-b_prepend=0;
+b_append=0;
 b_separator=0;
 v_delim="";
 debug=0;
 help_string="
-$bold stamp$blank: Stamp file with the current date
+$bold stamp$blank: Rename a file, adding date of modification.
 
 $yellow USAGE: $blank
     $bold stamp $blank [flags/options] [file]
 
-    e.g.    file.txt > file-20_09_03.txt
+    e.g.    file.txt   >   200903_file.txt
 
 $yellow FLAGS: $blank
-    $green -p                $blank prepend stamp (default is append).
+    $green -a                $blank append stamp (default is prepend).
     $green -h                $blank show list of stamp-line options.
 
 $yellow
@@ -30,9 +29,9 @@ OPTIONS: $blank
 
 "
 
-while getopts 'psh-:d:D' opt; do
+while getopts 'ash-:d:D' opt; do
     case "${opt}" in
-		p) b_prepend=1;;
+		a) b_append=1;;
 		s) b_separator=1; v_separator="$OPTARG";;
 		d) v_delim="$OPTARG";;
 		D) debug=1;;
@@ -52,10 +51,8 @@ if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
 date_modified=$(stat -f %m "$q");
 date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d");
 
-if [[ "$b_prepend" == 1 ]]; then {
-	rename -A "$date_modified_formatted$v_separator" "$q";
-}; else {
+if [[ "$b_append" == 1 ]]; then {
 	rename -Xa "$v_separator$date_modified_formatted" "$q";
+}; else {
+	rename -A "$date_modified_formatted$v_separator" "$q";
 }; fi
-
-

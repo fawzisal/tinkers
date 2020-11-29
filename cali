@@ -16,6 +16,7 @@ USAGE: $blank
     $bold cali $blank [flags/options] [query]
 $yellow
 FLAGS: $blank
+    $green -r   $blank convert new files to text format.
     $green -w   $blank only show matches surrounded by word boundaries.
     $green -c   $blank only show count of matches.
     $green -k   $blank only show count & clean the output.

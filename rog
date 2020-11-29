@@ -39,9 +39,9 @@ while getopts 'h-:eil:d' opt; do
   	esac
 done
 
-# . "/Users/admin/pros/sys/helpers/data/colors.sh";
 datadir="$DATAPATH"
 if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+. "$datadir/colors.sh";
 
 m0=$[ m - 1 ];
 if [[ "$e" == 1 ]]; then { prebase="<$q>"; }; else { prebase="$q"; }; fi
@@ -59,7 +59,7 @@ if [[ $i ]]; then i="-i "; fi
 if [[ -z "$q" ]]; then {
 	printf "$help_string";
 }; else {
-	rg -INo $i --pcre2 "$postbase" $datadir/roget.md |
+	rg -INo $i --pcre2 "$postbase" "$datadir/roget.md" |
 		gsed 's/\t\(#.\+\) --/\n===== \1\t========================================/g' |
 		gsed 's/>|/, /g' |
 		# perl -0777 -pe 's/‡\n?†/\n ---------------------------------------- \n/g' |

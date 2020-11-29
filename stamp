@@ -20,7 +20,11 @@ $yellow USAGE: $blank
 
 $yellow FLAGS: $blank
     $green -a                $blank append stamp (default is prepend).
+<<<<<<< HEAD
     $green -h                $blank show list of command-line options.
+=======
+    $green -h                $blank show list of stamp-line options.
+>>>>>>> updated code, changed data files to soft links
 
 $yellow
 OPTIONS: $blank
@@ -51,7 +55,6 @@ if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
 date_modified=$(stat -f %m "$q");
 date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d");
 
-if [[ "$b_append" == 1 ]]; then {
 if [[ "$b_append" == 1 ]]; then {
 	rename -Xa "$v_separator$date_modified_formatted" "$q";
 }; else {

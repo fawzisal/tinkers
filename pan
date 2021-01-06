@@ -48,10 +48,10 @@ if [[ $v_conv_from == "pdf" ]]; then {
 	if [[ $v_conv_to == "plain" ]]; then {
 		v_conv_to="txt";
 	}; fi
-	for i in $(fd -I -e pdf -d1 -x echo {.}); do {
+	while read i; do {
 		echo "converting:	$i...";
 		mutool convert -o "$i.$v_conv_to" "$i.pdf";
-	}; done;
+	}; done <<< "$(fd -I -e pdf -d1 -x echo {.})"
 # }; elif [[ $v_conv_from == "doc" ]]; then {
 # 	for i in $(fd -I -e doc -d1 -x echo {.}); do {
 # 		echo "converting:	$i...";
@@ -64,13 +64,13 @@ if [[ $v_conv_from == "pdf" ]]; then {
 	if [[ "$v_conv_to" == "plain" ]]; then {
 		v_conv_to="txt"
 	}; fi
-	for i in $(fd -I -e "$v_conv_from" -d1 -x echo {.}); do {
+	while read i; do {
 		echo "converting:	$i...";
 		soffice --headless --convert-to "$v_conv_to" "$i.$v_conv_from";
 		echo "saved to $i\.$v_conv_to"
-	}; done;
+	}; done <<< "$(fd -I -e "$v_conv_from" -d1 -x echo {.})"
 }; else {
-	for i_ in $(fd -I $b_conv_from "$v_conv_from" -d1 -x echo "{.}¬{}"); do {
+	while read i; do {
 		i=($(echo $i_ | tr -s ¬ ' '));
 		base_path="${i[0]}";
 		n_base_path=$(( ${#base_path} + 1 ));
@@ -87,7 +87,7 @@ if [[ $v_conv_from == "pdf" ]]; then {
 		}; else {
 			pandoc -i "$base_path.$extension" -o "$base_path.$v_conv_to";
 		}; fi
-	}; done;
+	}; done <<< "$(fd -I $b_conv_from "$v_conv_from" -d1 -x echo "{.}¬{}")"
 }; fi
 
 if [[ $debug -eq 1 ]]; then {

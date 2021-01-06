@@ -4,6 +4,7 @@
 # 	print the output.
 # 
 
+b_raw=""
 help_string="
 $bold bin_visual$blank: Classify a list of lines of string in the clipboard & print the output.
 		(Data is pasted from the clipboard.)
@@ -16,18 +17,27 @@ $yellow FLAGS: $blank
     $green -h   $blank show list of command-line options.
 "
 
-while getopts 'h-:' opt; do
+while getopts 'h-:r' opt; do
     case "${opt}" in
+    r) b_raw="1";;
     h|\?) printf "$help_string"; b_help="help"; exit 1;;
     -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
     *) echo "Unknown flag $OPTARG."; exit 1;;
   esac
 done
 
+related="$(< /dev/stdin)";
+
 n0=0
 n=1
 i=0
-str=$(pbpaste | tr -sc '[A-z0-9\n]' '\n' | sed 's/$/,/' | sort);
+if [[ $b_raw ]]; then {
+	str=$(echo -e "$related" | tr -s '[\t\+\|]' '¬' | sed 's/$/|/' | sort);
+	# str=$(pbpaste | tr -sc '[A-z0-9\n]' '\n' | sed 's/$/,/' | sort);
+}; else {
+	str=$(echo -e "$related" | tr -sc '[A-z0-9\n]' '\n' | sed 's/$/,/' | sort);
+	# str=$(pbpaste | tr -s '[\t\+\|]' '¬' | sed 's/$/|/' | sort);
+}; fi
 
 while [[ ! n0 -eq n ]] && [[ i -lt 20 ]]; do { 
 	i=$[ i + 1 ];
@@ -37,22 +47,23 @@ while [[ ! n0 -eq n ]] && [[ i -lt 20 ]]; do {
 	# echo "$n0/$n";
 }; done
 
+echo -e "$str"
 
-stars_num=$(echo "$str" | gsed 's/\+/+\n/g' | grep -c '+')
-# echo "stars_num: <$stars_num>"
-str_final=""
-export IFS="|"
-for i in $(echo $str | tr -s '\n' '|'); do {
-	n_line=$(echo "$i" | gsed 's/\+/+\n/g' | grep -c '+');
-	n_line_perc=$(echo "100*$n_line/$stars_num" | bc);
-	# n_line_perc=5
-	s=$(printf "%-${n_line_perc}s" '-');
-	rep=$(echo ${s// /-});
-	# echo $s;
-	# echo $n_line_perc;
-	i_final=$(echo $i | gsed "s/,.*$/,$rep/");
-	str_final+="$i_final\n";
-	# echo $str_final;
-}; done
+# stars_num=$(echo "$str" | gsed 's/\+/+\n/g' | grep -c '+')
+# # echo "stars_num: <$stars_num>"
+# str_final=""
+# export IFS="|"
+# for i in $(echo $str | tr -s '\n' '|'); do {
+# 	n_line=$(echo "$i" | gsed 's/\+/+\n/g' | grep -c '+');
+# 	n_line_perc=$(echo "100*$n_line/$stars_num" | bc);
+# 	# n_line_perc=5
+# 	s=$(printf "%-${n_line_perc}s" '-');
+# 	rep=$(echo ${s// /-});
+# 	# echo $s;
+# 	# echo $n_line_perc;
+# 	i_final=$(echo $i | gsed "s/,.*$/,$rep/");
+# 	str_final+="$i_final\n";
+# 	# echo $str_final;
+# }; done
 
-printf "$str_final" | xsv table
+# printf "$str_final" | xsv table

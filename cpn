@@ -5,9 +5,9 @@
 # REQUIREMENTS: OSX
 # 
 
-ffrom_="$1";
-fto_="$2";
 q="$BASH_ARGV";
+ffrom_="";
+fto_="";
 debug=0;
 help_string="
 $bold cpn$blank: Copy a folder using Finder.
@@ -16,28 +16,32 @@ $yellow USAGE: $blank
     $bold cpn $blank [flags/options] [from] [to]
 
 $yellow FLAGS: $blank
+	$green -f/t [folder]  $blank folder to copy from/destination.
+
+$yellow FLAGS: $blank
     $green -h   $blank show list of cpn-line options.
 
 "
 
-while getopts 'h-:' opt; do
+while getopts 'df:t:h-:' opt; do
     case "${opt}" in
 		d) debug=1;;
+		f|i) f0="$OPTARG";;
+		t|o) f1="$OPTARG";;
 	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
 	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
 	    *) echo "Unknown flag $OPTARG."; exit 1;;
 	esac
 done
 
-if [[ "$debug" == 1 ]]; then {
-	echo "debugging";
-}; fi
-
-f0="$ffrom_"
-f1="$fto_"
 if [[ "${f0:0:1}" == "/" ]]; then { f0=${f0:1}; }; else { f0="Macintosh HD$(pwd)/$f0"; };fi
 if [[ "${f1:0:1}" == "/" ]]; then { f1=${f1:1}; }; else { f1="Macintosh HD$(pwd)/$f1"; };fi
 f0=$(echo $f0 | tr "/" ":" )
 f1=$(echo $f1 | tr "/" ":" )
+if [[ "$debug" == 1 ]]; then {
+	echo "debugging";
+	echo "f0: <$f0>";
+	echo "f1: <$f1>";
+}; fi
 osascript -e "tell application \"Finder\" to duplicate folder \"$f0\" to folder \"$f1\""
 

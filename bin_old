@@ -3,7 +3,7 @@
 # bin:   Create a histogram of non-common words in a string input.
 #				!important: Data is pasted from the clipboard.
 # 
-# REQUIREMENTS: gsed
+# REQUIREMENTS: sed
 # 
 
 help_string="
@@ -34,7 +34,7 @@ str=$(echo -e "$related" | tr -sc '[A-z0-9\n]' '\n' | sed 's/$/,/' | sort);
 datadir="$DATAPATH"
 if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
 mcf="$datadir/common_words.txt"
-most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
+most_common=$(cat $mcf | tr -s '\n' '|' | sed 's/|/\\|/g')
 
 while [[ ! n0 -eq n ]] && [[ i -lt 20 ]]; do { 
 	i=$[ i + 1 ];
@@ -44,9 +44,9 @@ while [[ ! n0 -eq n ]] && [[ i -lt 20 ]]; do {
 	# echo "$n0/$n";
 }; done
 
-# echo "$str" | gsed "s/^\(${most_common::${#most_common}-1}\),.*$//i"
+# echo "$str" | sed "s/^\(${most_common::${#most_common}-1}\),.*$//i"
 echo "$str" |
-	gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i" |
+	sed "s/^\(${most_common::${#most_common}-1}}\),.*$//i" |
 	sort |
 	uniq;
 

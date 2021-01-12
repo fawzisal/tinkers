@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#ip="$(/sbin/ifconfig eth0 | grep 'inet ' | tr -s '[a-z ]' , | cut -d, -f2)"
+#nohup jupyter notebook . –-no-browser –-ip 107.155.108.48 –-port 8888 1>/dev/null 2>/dev/null &
+#ips=$(ps aux | grep jupyter-notebook | head -n1 | tr -s ' ' , | cut -d, -f2 | x kill)
+#ips=$(jupyter notebook list --jsonlist | jq '.[] | [.pid, .port, notebook_dir]');
+#echo "will stop: $ips"
+ips=$(jupyter notebook list --jsonlist | jq '.[] | [.pid, .port, .notebook_dir] | @csv' | tr -d '\\"')
+#echo "$ips"
+#while read p; do {
+for p in $ips; do {
+	#echo "$p";
+	pid=$(echo $p | cut -d, -f1);
+	port=$(echo $p | cut -d, -f2);
+	dir=$(echo $p | cut -d, -f3);
+	if [[ -z $pid ]]; then exit; fi
+	echo "will stop :$port, located at $dir";
+	read -r -p "Are you sure? " -n1 c;
+	#echo "<$c>";
+	if [[ $c =~ ^[Yy]$ ]]; then {
+		kill "$pid";
+	}; fi
+}; done
+echo;
+#}; done <<< "$(jupyter notebook list --jsonlist | jq '.[] | [.pid, .port, .notebook_dir] | @csv')"
+
+#ps aux | grep jupyter-notebook | head -n1 | tr -s ' ' , | cut -d, -f2 | x kill
+

@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# :  tag file with data from isbn
+# 
+# REQUIREMENTS: ?
+# 
+
+for i in $(fd -td -d1); do echo -e "$(fd . $i | wc -l)\t$i"; done

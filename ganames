@@ -1,0 +1,25 @@
+#!/home/admin/.linuxbrew/bin/python3.8
+
+import spacy
+import sys
+import pandas as pd
+
+
+fpath = sys.argv[1:]
+print(fpath)
+#fname = "/".join(fpath)
+#t = open(fname).read()
+#nlp = spacy.load("en_core_web_sm")
+#doc = nlp(t)
+#docs = pd.DataFrame([{'label': d.label_,
+#                      'line': d.start,
+#                      'cat': d.text,
+#                      'fname': fname} for d in doc.ents])
+#docs = docs[docs.label == 'PERSON']
+#docs.to_csv(fname + '.csv')
+
+# import argparse
+# parser = argparse.ArgumentParser(description='filename')
+# parser.add_argument('', nargs='?', help='filname',
+#                     dest='filename', default=False)
+

@@ -1,0 +1,32 @@
+#!/home/admin/.linuxbrew/bin/python3.8
+
+import spacy
+import os
+import sys
+import pandas as pd
+
+
+fpath = sys.argv[1:]
+nlp = spacy.load("en_core_web_sm")
+
+for fname in fpath: 
+    print(f'opening {fname}')
+    try:
+        if os.path.exists(fname + '.csv'):
+            continue
+        t = open(fname).read()
+        doc = nlp(t)
+        docs = pd.DataFrame([{'label': d.label_,
+                              'line': d.start,
+                              'cat': d.text,
+                              'fname': fname} for d in doc.ents])
+        docs = docs[docs.label == 'PERSON']
+        docs.to_csv(fname + '.csv')
+    except Exception as e:
+        print(e)
+
+# import argparse
+# parser = argparse.ArgumentParser(description='filename')
+# parser.add_argument('', nargs='?', help='filname',
+#                     dest='filename', default=False)
+

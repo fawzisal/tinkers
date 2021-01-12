@@ -1,0 +1,7 @@
+#!/bin/bash
+
+#ip="$(/sbin/ifconfig eth0 | grep 'inet ' | tr -s '[a-z ]' , | cut -d, -f2)"
+nohup jupyter notebook . –-no-browser 2>/dev/null 1>> ~/.jupyter/log.log &
+sleep 1;
+grep http ~/.jupyter/log.log | tail -n1;
+

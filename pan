@@ -55,10 +55,11 @@ if [[ "$v_conv_to" == "plain" ]]; then v_conv_to="txt"; fi
 # 	}; done;
 
 if [[ $v_conv_from == "pdf" ]]; then {
-<<<<<<< HEAD
+#<<<<<<< HEAD
 	if [[ $v_conv_to == "plain" ]]; then {
 		v_conv_to="txt";
 	}; fi
+	echo "$v_conv_from > $v_conv_to";
 	while read i; do {
 		echo "converting:	$i...";
 		mutool convert -o "$i.$v_conv_to" "$i.pdf";
@@ -70,13 +71,15 @@ if [[ $v_conv_from == "pdf" ]]; then {
 	if [[ "$v_conv_to" == "plain" ]]; then {
 		v_conv_to="txt"
 	}; fi
+	echo "$v_conv_from > $v_conv_to";
 	while read i; do {
 		echo "converting:	$i...";
 		soffice --headless --convert-to "$v_conv_to" "$i.$v_conv_from";
 		echo "saved to $i\.$v_conv_to"
 	}; done <<< "$(fd -I -e "$v_conv_from" -d1 -x echo {.})"
 }; else {
-	while read i; do {
+	echo "$v_conv_from > $v_conv_to";
+	while read i_; do {
 #	for i in $(fd -i -I -e pdf -d1 -x echo {.}); do {
 #		if [[ -e "$i.$v_conv_to" ]]; then continue; fi
 #		echo "converting:	$i...";

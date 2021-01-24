@@ -1,0 +1,45 @@
+#!/bin/bash
+#
+# find_broken_links:  Find synonyms using Roget's thesaurus.
+# 
+# REQUIREMENTS: TBD
+# 
+
+
+q="$BASH_ARGV";
+m=1
+a=0
+e=0
+i=1
+debug=0
+
+help_string="
+$bold find_broken_links$blank: Search find_broken_linksmology.
+
+$yellow USAGE: $blank
+    $bold find_broken_links $blank [flags/options] [query]
+
+$yellow FLAGS: $blank
+    $green -h   $blank show list of command-line options.
+
+"
+
+while getopts 'h-:d' opt; do
+    case "${opt}" in
+		d) debug=1;;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+  	esac
+done
+
+if [[ -z $q ]]; then q=.; fi
+
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+. "$datadir/colors.sh";
+
+for i in $(fd . -tl $q); do {
+	# echo "<$i>";
+	test ! -f "$q/$i" && echo $i;
+} ; done

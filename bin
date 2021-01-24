@@ -17,12 +17,16 @@ $yellow USAGE: $blank
 $yellow FLAGS: $blank
     $green -n   $blank remove number-containing words.
     $green -c   $blank remove common words.
+    $green -i   $blank case-insensitive (warning: converts all to lower case).
     $green -h   $blank show list of command-line options.
+
+    $green -C   $blank remove common words in custom list.
 "
 
-while getopts 'hnc-:' opt; do
+while getopts 'hnc-:C:' opt; do
     case "${opt}" in
     c) b_common="1";;
+    C) b_COMMON="1"; v_COMMON="$OPTARG";;
     n) b_num="1";;
     h|\?) printf "$help_string"; b_help="help"; exit 1;;
     -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
@@ -49,6 +53,12 @@ if [[ ! -z "$b_common" ]]; then {
     if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
     mcf="$datadir/common_words.txt"
     most_common=$(cat $mcf | tr -s '\n' '|' | gsed 's/|/\\|/g')
+    str_clean=$(printf "$str_clean" |
+                gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i");
+}; fi
+
+if [[ ! -z "$b_COMMON" ]]; then {
+    most_common=$(cat "$v_COMMON" | tr -s '\n' '|' | gsed 's/|/\\|/g')
     str_clean=$(printf "$str_clean" |
                 gsed "s/^\(${most_common::${#most_common}-1}}\),.*$//i");
 }; fi

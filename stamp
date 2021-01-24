@@ -7,6 +7,7 @@
 
 q="$BASH_ARGV";
 b_append=0;
+b_time=0;
 b_separator=0;
 v_delim="";
 debug=0;
@@ -33,12 +34,13 @@ OPTIONS: $blank
 
 "
 
-while getopts 'ash-:d:D' opt; do
+while getopts 'ash-:d:Dt' opt; do
     case "${opt}" in
 		a) b_append=1;;
 		s) b_separator=1; v_separator="$OPTARG";;
 		d) v_delim="$OPTARG";;
 		D) debug=1;;
+		t) b_time=1;;
 	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
 	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
 	    *) echo "Unknown flag $OPTARG."; exit 1;;
@@ -53,7 +55,11 @@ if [[ "$b_separator" == 0 ]]; then { v_separator="_"; }; fi
 if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
 
 date_modified=$(stat -f %m "$q");
-date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d");
+if [[ "$b_time" == 1 ]]; then {
+	date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d$v_delim%H$v_delim%M");
+}; else {
+	date_modified_formatted=$(date -jf "%s" "$date_modified" "+%y$v_delim%m$v_delim%d");
+}; fi
 
 if [[ "$b_append" == 1 ]]; then {
 	rename -Xa "$v_separator$date_modified_formatted" "$q";

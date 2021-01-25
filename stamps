@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# stamp:  Rename a file, adding date of modification, GNU/Linux Version.
+# 
+# REQUIREMENTS: req1, re2, req3
+# 
+
+q="$BASH_ARGV";
+b_append=0;
+b_separator=0;
+v_delim="";
+debug=0;
+help_string="
+$bold stamp$blank: Rename a file, adding date of modification.
+
+$yellow USAGE: $blank
+    $bold stamp $blank [flags/options] [file]
+
+    e.g.    file.txt   >   200903_file.txt
+
+$yellow FLAGS: $blank
+    $green -a                $blank append stamp (default is prepend).
+<<<<<<< HEAD
+    $green -h                $blank show list of command-line options.
+=======
+    $green -h                $blank show list of stamp-line options.
+>>>>>>> updated code, changed data files to soft links
+
+$yellow
+OPTIONS: $blank
+    $green -s  [separator]   $blank separator between filename and stamp (default: _).
+    $green -d  [delimiter]   $blank delimiter of date components (default: None).
+
+"
+
+while getopts 'ash-:d:D' opt; do
+    case "${opt}" in
+		a) b_append=1;;
+		s) b_separator=1; v_separator="$OPTARG";;
+		d) v_delim="$OPTARG";;
+		D) debug=1;;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+if [[ "$b_separator" == 0 ]]; then { v_separator="_"; }; fi
+if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
+
+date_modified_formatted=$(date -r "$q" "+%y$v_delim%m$v_delim%d");
+
+if [[ "$debug" == 1 ]]; then {
+	echo "debugging";
+	echo "q: $q";
+	echo "opt: $opt";
+	echo "b_separator: $b_separator";
+	echo "b_delimiter: $b_delimiter";
+	echo "date_modified: $date_modified";
+	echo "date_modified_formatted: $date_modified_formatted";
+}; fi
+
+
+if [[ "$b_append" == 1 ]]; then {
+	rename -Xa "$v_separator$date_modified_formatted" "$q";
+}; else {
+	rename -A "$date_modified_formatted$v_separator" "$q";
+}; fi

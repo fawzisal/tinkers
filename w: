@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# w::  Directly search using websites' search engines.
+# 
+# REQUIREMENTS: fzf, w3m
+# 
+
+q="$BASH_ARGV";
+debug=0;
+help_string="
+$bold w:$blank: Directly search using websites' search engines.
+
+$yellow FLAGS: $blank
+    $green -h                $blank show list of stamp-line options.
+
+"
+
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+. "$datadir/colors.sh";
+
+while getopts 'h-:d' opt; do
+    case "${opt}" in
+		d) debug=1;;
+		t) b_time=1;;
+	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
+	    -) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+	    *) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+# if [[ "$b_separator" == 0 ]]; then { v_separator="_"; }; fi
+# if [[ "$b_delimiter" == 0 ]]; then { v_delim=""; }; fi
+
+res=$(tail -n +2 $datadir/websites.csv | fzf -d, -n 1,2 --with-nth=1)
+res_name=$(echo $res | cut -d, -f1)
+read -p "SEARCH	$(tput setaf 1)$res_name$(tput sgr0): " -r query
+res_url=$(echo $res | cut -d, -f2 | sed "s/{query}/$query/g")
+w3m "$res_url"

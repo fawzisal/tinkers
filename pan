@@ -3,7 +3,7 @@
 # pan:   convert all files in the current folder
 # 
 # 
-# REQUIREMENTS: pandoc, mupdf-tools
+# REQUIREMENTS: pandoc, mupdf-tools, ebook-convert (for mobi conversion)
 #
 
 q="$BASH_ARGV";
@@ -15,6 +15,7 @@ debug=0;
 
 b_conv_from=""
 v_conv_from=""
+v_conv_to="txt"
 b_iconv=""
 
 help_string="$yellow USAGE: $blank
@@ -22,7 +23,7 @@ help_string="$yellow USAGE: $blank
 $yellow
  FLAGS: $blank
     $green -f/i   $blank format of files to convert from (e.g. pdf).
-    $green -t/o   $blank format of files to convert to (e.g. txt).
+    $green -t/o   $blank format of files to convert to (default: txt).
     $green -c     $blank convert to utf-8.
     $green -h     $blank show list of command-line options.
 "
@@ -39,6 +40,11 @@ while getopts 'ci:f:o:t:hd-:' opt; do
 		*) echo "Option -$OPTARG requires an argument."; exit 1;;
 	esac
 done
+
+if [[ -z "$v_conv_from" ]]; then {
+	printf "$red""format of files to convert from not specified $reset";
+	exit;
+}; fi
 
 if [[ $debug -eq 1 ]]; then {
 	echo "from: $v_conv_from"
@@ -75,6 +81,16 @@ if [[ $v_conv_from == "pdf" ]]; then {
 	while read i; do {
 		echo "converting:	$i...";
 		soffice --headless --convert-to "$v_conv_to" "$i.$v_conv_from";
+		echo "saved to $i\.$v_conv_to"
+	}; done <<< "$(fd -I -e "$v_conv_from" -d1 -x echo {.})"
+}; elif [[ ($v_conv_from == "mobi") ]]; then {
+	if [[ "$v_conv_to" == "plain" ]]; then {
+		v_conv_to="txt"
+	}; fi
+	echo "$v_conv_from > $v_conv_to";
+	while read i; do {
+		echo "converting:	$i...";
+		ebook-convert "$i.$v_conv_from" "$i.$v_conv_to";
 		echo "saved to $i\.$v_conv_to"
 	}; done <<< "$(fd -I -e "$v_conv_from" -d1 -x echo {.})"
 }; else {

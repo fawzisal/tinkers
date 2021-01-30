@@ -8,7 +8,7 @@
 q="$BASH_ARGV";
 
 b_convert=""; b_icase=""; b_word=""; b_count=""; b_Folder=""; version="1.0"; b_find="";
-b_file=""; v_file="."; b_klean=""; b_add="";
+b_file=""; v_file="."; b_klean=""; b_add=""; b_debug="";
 b_context=""; v_context="";
 . "$HOME/pros/sys/helpers/data/colors.sh";
 help_string="$yellow
@@ -17,6 +17,7 @@ USAGE: $blank
 $yellow
 FLAGS: $blank
     $green -r   $blank convert new files to text format.
+    $green -F   $blank only search file names.
     $green -w   $blank only show matches surrounded by word boundaries.
     $green -c   $blank only show count of matches.
     $green -k   $blank only show count & clean the output.
@@ -34,9 +35,10 @@ if [[ -z $(echo "$q" | tr -d ' ') ]]; then {
 	printf "$help_string"; b_help="help"; exit 1;
 }; fi
 
-while getopts 'wcrhvikFf:C:-:a:' opt; do
+while getopts 'wcrdhvikFf:C:-:a:' opt; do
 	case "${opt}" in
 		r) b_convert="convert";;
+		d) b_debug="1";;
 		w) b_word="-w";;
 		c) b_count="-c";;
 		i) b_icase="-i";;
@@ -53,6 +55,23 @@ while getopts 'wcrhvikFf:C:-:a:' opt; do
 		# *) echo "Option -$OPTARG requires an argument."; exit 1;;
 	esac
 done
+
+if [[ "$b_debug" == 1 ]]; then {
+	echo "debugging";
+	echo -e "base:\t<$base>";
+	echo -e "q:\t<$q>";
+	echo -e "b_add:\t<$b_add>";
+	echo -e "b_context:\t<$b_context>";
+	echo -e "b_convert:\t<$b_convert>";
+	echo -e "b_count:\t<$b_count>";
+	echo -e "b_find:\t<$b_find>";
+	echo -e "b_icase:\t<$b_icase>";
+	echo -e "b_klean:\t<$b_klean>";
+	echo -e "b_word:\t<$b_word>";
+	echo -e "v_add:\t<$v_add>";
+	echo -e "v_context:\t<$v_context>";
+	echo -e "v_file:\t<$v_file>";
+}; fi
 
 if [[ ! -z $b_add ]]; then {
 	cp "$q" "$HOME/books/shelf/cali/";

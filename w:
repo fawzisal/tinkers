@@ -11,7 +11,7 @@ help_string="
 $bold w:$blank: Directly search using websites' search engines.
 
 $yellow FLAGS: $blank
-    $green -h                $blank show list of stamp-line options.
+    $green -h                $blank show list of command-line options.
 
 "
 

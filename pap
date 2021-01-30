@@ -15,7 +15,7 @@ $yellow USAGE: $blank
 
 $yellow FLAGS: $blank
 	$green
-    $green -h   $blank show list of pap-line options.
+    $green -h   $blank show list of command-line options.
 $yellow
 OPTIONS: $blank
     $green -f [fileName]  $blank filename to write tags to.

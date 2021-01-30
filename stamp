@@ -21,7 +21,7 @@ $yellow USAGE: $blank
 
 $yellow FLAGS: $blank
     $green -a                $blank append stamp (default is prepend).
-    $green -h                $blank show list of stamp-line options.
+    $green -h                $blank show list of command-line options.
 
 $yellow
 OPTIONS: $blank

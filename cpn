@@ -19,7 +19,7 @@ $yellow FLAGS: $blank
 	$green -f/t [folder]  $blank folder to copy from/destination.
 
 $yellow FLAGS: $blank
-    $green -h   $blank show list of cpn-line options.
+    $green -h   $blank show list of command-line options.
 
 "
 

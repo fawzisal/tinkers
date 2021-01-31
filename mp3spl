@@ -2,28 +2,29 @@
 # 
 # generate cue from file metadata, then split using mp3splt
 # 
-# requires:		mp3splt, ffprobe, rename
+# required:		mp3splt, ffprobe, rename, exiftool
 # 
 
 q="$1"
 basename=$(echo "$q" | gsed 's/\.\w\+$//g')
-splt_pts=""
-base=$(ffprobe "$q" 2>&1 | rg -UNIo 'Chapter #.*\n *Metadata:\n *title.*$')
-table=$(printf "$base" | perl -0777 -pe 's/Chapter #0:(\d+): start ([0-9\.]+), .*\n *Metadata:\n *title *: (.*$)/\1|\3|\2/gm')
 cue_file="FILE \"$q\" MP3\n"
+base=$(ffprobe -v -8 -show_chapters -of csv "$q" | xsv select 2,8,5,7 )
+metadata=$(exiftool -Artist -Title -DateTimeOriginal -csv "$q" | tail -n1)
+performer=$(echo $metadata | cut -d, -f2)
+album=$(echo $metadata | cut -d, -f3)
+book_date=$(echo $metadata | cut -d, -f4)
 
-IFS=$'\n'
-for j in $(echo "$table"); do {
-	i=$(echo "$j" | xsv select 3 -d '|')
-	i1=$(echo "$j" | xsv select 1 -d '|')
-	i2=$(echo "$j" | xsv select 2 -d '|')
-    min=$(echo "$i/60" | bc)
-    sec=$(echo "$i-$min*60" | bc -l | xargs printf "%.2f")
-    i3=$(echo "$min:$sec" | tr -s '.' ':')
-	cue_file="$cue_file\nTRACK $i1 AUDIO\n  TITLE \"$i2\"\n  INDEX 01 $i3"
+IFS=$'\n';
+for j in $(echo "$base"); do {
+	num=$(echo "$j" | cut -d, -f1)
+	name=$(echo "$j" | cut -d, -f2)
+	start=$(echo "$j" | cut -d, -f3)
+	start_time=$(printf "%02i:%02.2f" $(echo "$start/60" | bc) $(echo "$start%60" | bc) | tr . :)
+	cue_file+=$(printf '\nTRACK %s AUDIO\n  TITLE "%s"\n  INDEX 01 %s' "$num" "$name" "$start_time")
+	cue_file+=$(printf '\n    PERFORMER "%s"\n    REM ALBUM "%s"\n    REM DATE "%s"\n    REM GENRE "%s"' "$performer" "$album" "$book_date" "Audiobook")
 }; done
 
 printf "$cue_file" > "$basename.cue"
 
-mp3splt -c "$basename.cue" "$q"
-rename -s ' - ' '' *mp3
+mp3splt -c "$basename.cue" -o "$basename/@n-@t" "$q"
+rename --nows  -S ' - ' '-' "$basename"/*mp3

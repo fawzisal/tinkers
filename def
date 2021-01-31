@@ -54,6 +54,7 @@ if [[ -z "$q" ]]; then {
 }; else {
 	# echo "q: <$q,$v_one,$v_start>";
 	rg -i $v_one $v_exact "$v_start$q" "$datadir/oed.txt" |
+		perl -pe 's/ (\d+\. [A-Z])/\n|\1/i' |
 		gsed "s/$/$sep/g" |
 		gsed 's/|/\n/g' |
 		gsed "s/\(\.\|\]\)\([0-9]\)\./\1\n\n\2./g" |

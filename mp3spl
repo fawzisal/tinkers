@@ -1,0 +1,34 @@
+#!/bin/bash
+# generate cue file from ffprobe data, split using mp3splt
+
+q="$1"
+# ffmpeg -i "$q" "$q.mp3";
+basename=$(echo "$q" | gsed 's/\.\w\+$//g')
+splt_pts=""
+base=$(ffprobe "$q" 2>&1 | rg -UNIo 'Chapter #.*\n *Metadata:\n *title.*$')
+table=$(printf "$base" | perl -0777 -pe 's/Chapter #0:(\d+): start ([0-9\.]+), .*\n *Metadata:\n *title *: (.*$)/\1|\3|\2/gm')
+# pts=$(printf "$base" | grep -o '\d\+\.\d\{6\}' | sort -n | uniq)
+cue_file="FILE \"$q\" MP3\n"
+IFS=$'\n'
+for j in $(echo "$table"); do {
+	# echo "$j"
+	i=$(echo "$j" | xsv select 3 -d '|')
+	i1=$(echo "$j" | xsv select 1 -d '|')
+	i2=$(echo "$j" | xsv select 2 -d '|')
+    min=$(echo "$i/60" | bc)
+    sec=$(echo "$i-$min*60" | bc -l | xargs printf "%.2f")
+    i3=$(echo "$min:$sec" | tr -s '.' ':')
+	cue_file="$cue_file\nTRACK $i1 AUDIO\n  TITLE \"$i2\"\n  INDEX 01 $i3"
+    # splt_pts="$splt_pts\n$min.$sec"
+}; done
+printf "$cue_file" > "$basename.cue"
+mp3splt -c "$basename.cue" "$q"
+rename -s ' - ' '' *mp3
+# chaps=$(printf "$base" | grep '^ *title *: ' | gsed 's/^ *title *: //g')
+# pts_len=$(printf "$pts" | wc -l | tr -d ' ')
+# chaps_len=$(printf "$chaps" | wc -l | tr -d ' ')
+# lendiff=$(echo "$pts_len-$chaps_len" | bc)
+# echo "$pts_len points, $chaps_len chapters, diff=$lendiff. Points: {$splt_pts}";
+# if [[ "$lendiff" == "1" ]]; then {
+# 	mp3splt "$q" $splt_pts;
+# }; fi

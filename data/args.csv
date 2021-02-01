@@ -1,1 +1,16 @@
-/Users/admin/.local/study/args.csv
+flags,nargs,action,help,dest,default
+-F,1,,[filter] filter (n: new; p: previously asked; h: hidden; a: all),filter,0
+-M,1,,[filter] mode (o: ordered; r: random; e: exact answers; E: exact answers if simple; r: review (scores not store); u: unforgiving; c: case-sensitive),mode,0
+-t,?,,[filter] only include items matching tags,tags,False
+-a,1,,[filter] asked before # times,asked,0
+-c,1,,[filter] correct before,correct,0
+-s,1,,[filter] score [0-10],score,0
+-o,1,,[filter] young (<= x days old),young,0
+-O,1,,[filter] old (> x days old),old,0
+-m,1,,[filter] maximum number of questions to ask,n_max,0
+-f,?,,[add   ] filname,filename,False
+-π,,store_true,[add   ] new terms (in new.json),new_terms,False
+-N,2,,[add   ] term [x] with definition [y],new_term,0
+-d,,store_true,[debug ] debug mode,debug,False
+-b,,store_true,[debug ] backup database,bk,False
+-L,1,,[debug ] list (t: terms; i: information; c: information in csv format; T: tags; s: detailed statistics) & exit,list,0

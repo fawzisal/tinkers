@@ -9,7 +9,8 @@
 q="$BASH_ARGV";
 m=1
 e=0
-i=1
+v_word=""
+v_case="";
 debug=0
 
 help_string="
@@ -22,15 +23,17 @@ $yellow FLAGS: $blank
     $green -l   $blank level of synonymity [1: exact, 2: near,
     				3: loose, 4: ≠ part of speech].
     $green -e   $blank exact match.
+    $green -w   $blank require word boundaries.
     $green -i   $blank case sensitive search.
     $green -h   $blank show list of command-line options.
 
 "
 
-while getopts 'h-:eil:d' opt; do
+while getopts 'h-:eil:dw' opt; do
     case "${opt}" in
 		e) e=1;;
-		i) i=0;;
+		w) v_word="-w ";;
+		i) v_case="";;
 		l) m=$OPTARG;;
 		d) debug=1;;
 	    h|\?) printf "$help_string"; b_help="help"; exit 1;;
@@ -54,12 +57,11 @@ if [[ "$debug" == 1 ]]; then {
 	echo "prebase: $prebase";
 }; fi
 
-if [[ $i ]]; then i="-i "; fi
-
 if [[ -z "$q" ]]; then {
 	printf "$help_string";
 }; else {
-	rg -INo $i --pcre2 "$postbase" "$datadir/roget.md" |
+	rg -INo $v_case --pcre2 "$postbase" "$datadir/roget.md" |
+		rg -IN $v_word "$q" |
 		gsed 's/\t\(#.\+\) --/\n===== \1\t========================================/g' |
 		gsed 's/>|/, /g' |
 		# perl -0777 -pe 's/‡\n?†/\n ---------------------------------------- \n/g' |

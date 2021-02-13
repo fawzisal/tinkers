@@ -21,6 +21,7 @@ $yellow USAGE: $blank
 
 $yellow FLAGS: $blank
     $green -a                $blank append stamp (default is prepend).
+    $green -t                $blank use time in stamp (in addition to date).
     $green -h                $blank show list of command-line options.
 
 $yellow

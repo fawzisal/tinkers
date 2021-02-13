@@ -20,7 +20,10 @@ $yellow FLAGS: $blank
     $green -i   $blank case-insensitive (warning: converts all to lower case).
     $green -h   $blank show list of command-line options.
 
-    $green -C   $blank remove common words in custom list.
+$yellow
+OPTIONS: $blank
+    $green -C [file]   $blank remove common words in custom list.
+
 "
 
 while getopts 'hnc-:C:' opt; do

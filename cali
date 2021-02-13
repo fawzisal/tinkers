@@ -7,7 +7,7 @@
 
 q="$BASH_ARGV";
 
-b_convert=""; b_icase=""; b_word=""; b_count=""; b_Folder=""; version="1.0"; b_find="";
+b_convert=""; b_printlinnum=""; b_icase=""; b_word=""; b_count=""; b_Folder=""; version="1.0"; b_find="";
 b_file=""; v_file="."; b_klean=""; b_add=""; b_debug="";
 b_context=""; v_context="";
 . "$HOME/pros/sys/helpers/data/colors.sh";
@@ -17,6 +17,8 @@ USAGE: $blank
 $yellow
 FLAGS: $blank
     $green -r   $blank convert new files to text format.
+    $green -i   $blank case-insensitive search.
+    $green -l   $blank print file line numbers.
     $green -F   $blank only search file names.
     $green -w   $blank only show matches surrounded by word boundaries.
     $green -c   $blank only show count of matches.
@@ -35,10 +37,11 @@ if [[ -z $(echo "$q" | tr -d ' ') ]]; then {
 	printf "$help_string"; b_help="help"; exit 1;
 }; fi
 
-while getopts 'wcrdhvikFf:C:-:a:' opt; do
+while getopts 'lwcrdhvikFf:C:-:a:' opt; do
 	case "${opt}" in
 		r) b_convert="convert";;
 		d) b_debug="1";;
+		l) b_printlinnum="1";;
 		w) b_word="-w";;
 		c) b_count="-c";;
 		i) b_icase="-i";;
@@ -71,6 +74,12 @@ if [[ "$b_debug" == 1 ]]; then {
 	echo -e "v_add:\t<$v_add>";
 	echo -e "v_context:\t<$v_context>";
 	echo -e "v_file:\t<$v_file>";
+}; fi
+
+if [[ "$b_printlinnum" == 1 ]]; then {
+	for i in $(rg -l --type-add "foo:*$v_file*" -tfoo $b_context $v_context $b_icase $b_word $b_count "$q" "$HOME/books/shelf/.cali/"); do {
+		printf "$yellow%8d$blank pages\t$(basename $i)\n" "$(wc $i | tr -s ' ' '|' | cut -d '|' -f 2)";
+	}; done
 }; fi
 
 if [[ ! -z $b_add ]]; then {

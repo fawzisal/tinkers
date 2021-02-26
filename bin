@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# bin:   Create a histogram of non-common words in a string input.
+# bin:   Count number of word occurances.
 #				!important: Data is pasted from the clipboard.
 # 
 # REQUIREMENTS: xsv, gsed, perl
@@ -9,10 +9,10 @@
 b_common=""
 b_num=""
 help_string="
-$bold bin_old$blank: Create a histogram of non-common words in a string input.
+$bold bin$blank: Count number of word occurances.
 
 $yellow USAGE: $blank
-    $bold bin_visual $blank [flags/options] [filename]
+    $bold bin $blank [flags/options] [filename]
 
 $yellow FLAGS: $blank
     $green -n   $blank remove number-containing words.

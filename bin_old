@@ -57,7 +57,7 @@ if [[ -z "$v_FILE" ]]; then {
 		sort |
 		uniq;
 }; else {
-	suffix=".csv";
+	suffix="";
 	cp "$v_FILE" "$v_FILE$suffix";
 	while [[ ! n0 -eq n ]] && [[ i -lt 20 ]]; do { 
 		i=$[ i + 1 ];

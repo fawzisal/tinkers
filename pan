@@ -122,7 +122,7 @@ if [[ $v_conv_from == "pdf" ]]; then {
 			#if [[ (-z "$b_app" ) && "" && (-z "$b_utf") ]]; then {
 			if [[ ! -z "$b_iconv" ]]; then {
 				echo "converting to utf-8";
-				iconv -ct utf8 "$base_path.$extension" | pandoc -i - -o "$base_path.txt" -t plain;
+				iconv -c -t utf8 "$base_path.$extension" | pandoc -i - -o "$base_path.txt" -t plain;
 			}; else {
 				pandoc -i "$base_path.$extension" -o "$base_path.txt" -t plain;
 			}; fi

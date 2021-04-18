@@ -1,0 +1,60 @@
+#!/bin/bash
+#
+# grk:  define a term using Greek-English dictionary
+# 
+# REQUIREMENTS: ripgrep
+# TODO: separate terms/definitions
+
+q="$BASH_ARGV";
+v_start="^"
+sep=""
+b_case="-i"
+v_one='-m1'
+sep_full="\n\n------------------------------------------------------------------------------------------------\n"
+help_string="
+$bold lat$blank: define a term using a Greek-English dictionary.
+
+$yellow USAGE: $blank
+    $bold lat $blank [flags/options] [query]
+
+$yellow FLAGS: $blank
+    $green -a   $blank show all matches (not just word entries).
+    $green -A   $blank display all results [first result is displayed by default].
+    $green -e   $blank require exact match at word boundaries.
+    $green -h   $blank show list of command-line options.
+    $green -c   $blank case-sensitive search [default: ignore case].
+
+"
+
+while getopts 'cenaA1dh-:' opt; do
+    case "${opt}" in
+		a) v_start="";;
+		A) v_one=''; sep="$sep_full";;
+		c) b_case="";;
+		e) v_exact='-w';;
+		d) b_debug=1;;
+		h|\?) printf "$help_string"; b_help="help"; exit 1;;
+		-) if [[ $OPTARG == "help" ]]; then printf "$help_string"; b_help="help"; exit 1; fi; ;;
+		*) echo "Unknown flag $OPTARG."; exit 1;;
+	esac
+done
+
+datadir="$DATAPATH"
+if [[ -z "$datadir" ]]; then datadir=$(pwd); fi
+
+if [[ $b_debug ]]; then {
+	echo "debugging";
+}; fi
+
+if [[ -z "$q" ]]; then {
+	printf "$help_string";
+}; else {
+	# echo "q: <$q,$v_one,$v_start>";
+	# echo "$b_case $v_one $v_exact $v_start$q $datadir/greek.txt"
+	rg $b_case $v_one $v_exact "$v_start$q" "$datadir/greek.txt" |
+		perl -pe 's/ (\d+\. [A-Z])/\n|\1/i' |
+		gsed "s/$/$sep/g" |
+		gsed 's/|/\n/g' |
+		gsed "s/\(\.\|\]\)\([0-9]\)\./\1\n\n\2./g" |
+		rg --no-column -N $b_case -C10 $v_exact "$q";
+}; fi
